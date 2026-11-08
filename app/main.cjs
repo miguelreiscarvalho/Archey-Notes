@@ -62,7 +62,7 @@ async function createWindow() {
   models = (await fs.readdir(path.join(root, 'documents/Modelos'))).filter(name => name.endsWith('.xopp')).map(name => name.slice(0, -5));
   window = new BrowserWindow({
     width: 1150, height: 830, minWidth: 780, minHeight: 650,
-    title: 'Xournal Lab — Estudos', icon: path.join(__dirname, 'renderer/assets/brand/archey-notes.ico'), backgroundColor: '#eef0f4', show: false,
+    title: 'Archey Notes', icon: path.join(__dirname, 'renderer/assets/brand/archey-notes.ico'), backgroundColor: '#eef0f4', show: false,
     autoHideMenuBar: true,
     webPreferences: { backgroundThrottling: false, preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, sandbox: true, webSecurity: true }
   });

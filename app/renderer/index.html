@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>Xournal Lab — Estudos</title>
+  <title>Archey Notes</title>
   <link rel="stylesheet" href="tokens.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="library.css">
@@ -15,7 +15,7 @@
 </head>
 <body>
   <aside class="sidebar">
-    <div class="brand"><span class="brand-icon" aria-hidden="true"><img src="assets/brand/archey-notes.png" alt=""></span><div class="nav-copy">XOURNAL LAB<small>Seu espaço de estudos</small></div></div>
+    <div class="brand"><span class="brand-icon" aria-hidden="true"><img src="assets/brand/archey-notes.png" alt=""></span><div class="nav-copy">Archey Notes</div></div>
     <button id="toggle-nav" class="nav-toggle" aria-controls="panel-navigation" aria-expanded="true" aria-label="Recolher navegação" title="Recolher navegação"><img src="assets/proton/chevron.svg" alt=""></button>
     <nav id="panel-navigation" aria-label="Áreas do painel">
       <button id="workspace-home" class="nav-item active" data-view="library" aria-current="page" aria-label="Tela de boas-vindas e biblioteca" title="Tela de boas-vindas e biblioteca"><span class="nav-icon"><img src="assets/studio/home.svg" alt=""></span><span class="nav-copy">Tela de boas-vindas</span></button>
@@ -31,13 +31,13 @@
     </div>
   </aside>
   <main>
-    <section id="editor-surface" aria-label="Editor Xournal integrado" hidden><p id="editor-loading">Preparando seu espaço de escrita…</p></section>
+    <section id="editor-surface" aria-label="Editor Xournal integrado" hidden><p id="editor-loading">Abrindo editor…</p></section>
     <div id="welcome-content">
     <div class="welcome-file-actions">
       <button id="workspace-open" class="button secondary">Abrir anotação ou PDF</button>
       <button id="workspace-new" class="button secondary">Novo caderno</button>
     </div>
-    <section class="page-heading"><span class="eyebrow">MAIS FOCO, MENOS ETAPAS</span><h1 id="heading">Uma nova página<br>para suas ideias.</h1><p id="subtitle">Prepare sua aula. O resto fica organizado.</p></section>
+    <section class="page-heading"><h1 id="heading">Archey Notes</h1><p id="subtitle" hidden></p></section>
     <section id="view-library" class="view">
       <div class="library-toolbar"><label class="search-field"><span class="sr-only">Buscar na biblioteca</span><input id="library-search" type="search" placeholder="Buscar pelo nome…"></label><button id="library-refresh" class="button secondary">Atualizar</button><button id="new-subject" class="button primary">＋ Nova matéria</button></div>
       <div id="library-content" aria-live="polite"><p class="quiet">Carregando sua biblioteca…</p></div>
@@ -45,24 +45,24 @@
     <section id="view-new" class="view" hidden>
       <div class="new-layout">
         <form id="lesson-form" class="card form-card">
-          <div class="card-heading"><span class="step">01</span><div><h2>Prepare sua aula</h2><p>Um assunto, um caderno, tudo no lugar.</p></div></div>
+          <div class="card-heading"><span class="step">01</span><div><h2>Prepare sua aula</h2></div></div>
           <div class="field-row"><label>Disciplina<input id="course" name="course" list="subject-options" maxlength="80" placeholder="Ex.: E02" autocomplete="off" required><datalist id="subject-options"></datalist></label><label>Data<input id="date" name="date" type="date" required></label></div>
           <label class="field">Tema ou capítulo<select id="lesson-chapter"><option value="">Sem capítulo definido</option></select></label>
-          <label class="field">Assunto da aula<input id="subject" name="title" maxlength="300" placeholder="O que vamos estudar hoje?" required></label>
+          <label class="field">Assunto da aula<input id="subject" name="title" maxlength="300" placeholder="Título da aula" required></label>
           <label class="field">Papel do caderno<select id="template" name="template" required><option value="">Carregando modelos…</option></select></label>
-          <div class="material"><div><strong>Já tem um material?</strong><p>Use uma cópia de um PDF como ponto de partida.</p></div><button type="button" id="choose-pdf" class="button secondary">Adicionar PDF</button></div>
+          <div class="material"><div><strong>PDF de fundo</strong><p>Opcional. Será usada uma cópia.</p></div><button type="button" id="choose-pdf" class="button secondary">Adicionar PDF</button></div>
           <div id="pdf-chip" class="file-chip" hidden><span id="pdf-name"></span><button type="button" id="remove-pdf" aria-label="Remover PDF selecionado">×</button></div>
           <button type="submit" id="create" class="button primary full">Criar e abrir no Xournal++ <span aria-hidden="true">↗</span></button>
           <p class="quiet form-footnote">A aula ficará disponível em Matérias. Os arquivos de origem são preservados.</p>
         </form>
-        <aside class="preview-column" aria-label="Prévia da aula"><div class="preview-label">SEU PRÓXIMO CADERNO</div><div class="paper-preview"><div class="paper-rule"></div><span id="preview-course" class="paper-course">DISCIPLINA</span><h2 id="preview-title">Espaço para<br>novas ideias.</h2><div class="paper-bottom"><span id="preview-date"></span><span id="preview-model">Quadriculado</span></div></div><div class="preview-caption"><span aria-hidden="true">✓</span><p>Nome, pasta e capa preparados.<br>Você pode começar a escrever.</p></div></aside>
+        <aside class="preview-column" aria-label="Prévia da aula"><div class="preview-label">PRÉVIA</div><div class="paper-preview"><div class="paper-rule"></div><span id="preview-course" class="paper-course">DISCIPLINA</span><h2 id="preview-title">Título da aula</h2><div class="paper-bottom"><span id="preview-date"></span><span id="preview-model">Quadriculado</span></div></div></aside>
       </div>
     </section>
     <section id="view-action" class="view" hidden>
       <article class="card action-card"><div class="action-icon" id="action-icon" aria-hidden="true">↗</div><h2 id="action-title"></h2><p id="action-description"></p><div class="notice"><strong>Comece pelo arquivo salvo</strong><p>Salve suas alterações no Xournal++ antes de selecionar a anotação aqui.</p></div><button id="run-action" class="button primary">Selecionar anotação</button><p id="action-detail" class="quiet"></p></article>
     </section>
     <section id="result" class="result-card" hidden aria-label="Resultado da operação"><div class="result-mark" aria-hidden="true">✓</div><div class="result-text"><strong id="result-title"></strong><p id="result-name"></p></div><button id="show-result" class="button secondary">Mostrar na pasta</button></section>
-    <div id="status" class="status-line" role="status" aria-live="polite">Pronto para uma nova aula.</div>
+    <div id="status" class="status-line" role="status" aria-live="polite"></div>
     </div>
   </main>
   <dialog id="library-dialog" aria-labelledby="library-dialog-title"><form id="library-dialog-form" method="dialog"><h2 id="library-dialog-title"></h2><label id="library-name-field" class="field">Nome<input id="library-name" maxlength="80" autocomplete="off"></label><label id="library-destination-field" class="field" hidden>Capítulo de destino<select id="library-destination"></select></label><div class="dialog-actions"><button id="library-dialog-cancel" type="button" class="button secondary">Cancelar</button><button type="submit" class="button primary">Salvar</button></div></form></dialog>

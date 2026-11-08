@@ -1,10 +1,10 @@
 const $ = selector => document.querySelector(selector);
 const views = {
-  library: { heading: 'Cada matéria,\nno seu lugar.', subtitle: 'Matérias, capítulos e anotações. Encontre seu próximo ponto de estudo.' },
-  new: { heading: 'Uma nova página\npara suas ideias.', subtitle: 'Prepare sua aula. O resto fica organizado.' },
-  export: { heading: 'Pronto para\ncompartilhar ideias.', subtitle: 'Uma cópia em PDF, sem perder seu caderno editável.', title: 'Exporte sua anotação', description: 'Escolha um arquivo .xopp salvo. O PDF recebe um nome com data e hora, e as exportações anteriores são preservadas.', detail: 'Uma versão de backup é guardada antes da exportação.', icon: '↗' },
-  backup: { heading: 'Seu trabalho merece\numa segunda cópia.', subtitle: 'Guarde uma versão e continue com tranquilidade.', title: 'Guarde uma versão', description: 'O caderno e seus materiais associados ficam reunidos em um pacote com data e hora. As versões anteriores continuam disponíveis.', detail: 'O backup usa o arquivo salvo. Anotações com áudio ainda não são suportadas.', icon: '↶' },
-  pack: { heading: 'Leve suas anotações\ncom você.', subtitle: 'O caderno e o material de origem, juntos.', title: 'Prepare um pacote', description: 'Escolha a anotação e uma pasta de destino. Pode ser uma pasta OneDrive já sincronizada, um pendrive ou uma pasta local.', detail: 'Extraia o ZIP inteiro antes de abrir. O envio em nuvem depende do cliente da pasta escolhida.', icon: '□' }
+  library: { heading: 'Archey Notes', subtitle: '' },
+  new: { heading: 'Nova aula', subtitle: '' },
+  export: { heading: 'Exportar PDF', subtitle: '', title: 'Exportar anotação', description: 'Selecione um arquivo .xopp salvo. O PDF será criado com data e hora no nome.', detail: 'Um backup é criado antes da exportação.', icon: '↗' },
+  backup: { heading: 'Guardar versões', subtitle: '', title: 'Criar backup', description: 'Crie um pacote da anotação salva e dos arquivos associados, com data e hora.', detail: 'Anotações com áudio ainda não são suportadas.', icon: '↶' },
+  pack: { heading: 'Compartilhar', subtitle: '', title: 'Criar pacote', description: 'Selecione a anotação e a pasta de destino do pacote.', detail: 'Extraia o ZIP inteiro antes de abrir. O envio para a nuvem depende do aplicativo de sincronização.', icon: '□' }
 };
 let currentView = 'library';
 let pdf = null;
@@ -17,6 +17,7 @@ function setView(name) {
   const info = views[name];
   $('#heading').replaceChildren(...info.heading.split('\n').flatMap((line, index) => index ? [document.createElement('br'), document.createTextNode(line)] : [document.createTextNode(line)]));
   $('#subtitle').textContent = info.subtitle;
+  $('#subtitle').hidden = !info.subtitle;
   $('#view-new').hidden = name !== 'new'; $('#view-action').hidden = name === 'new';
   $('#view-library').hidden = name !== 'library';
   $('#view-action').hidden = ['new','library'].includes(name);
@@ -29,13 +30,13 @@ function setView(name) {
     image.src = `assets/studio/${{ export:'export', backup:'backup', pack:'share' }[name]}.svg`;
     $('#action-icon').replaceChildren(image);
   }
-  $('#status').textContent = name === 'new' ? 'Pronto para uma nova aula.' : name==='library' ? 'Selecione uma matéria para acessar seus capítulos.' : 'Escolha a versão salva da sua anotação.';
+  $('#status').textContent = name === 'new' ? '' : name==='library' ? '' : 'Selecione uma anotação salva.';
   $('#status').classList.remove('error');
 }
 
 function preview() {
   $('#preview-course').textContent = $('#course').value.trim().toUpperCase() || 'DISCIPLINA';
-  $('#preview-title').textContent = $('#subject').value.trim() || 'Espaço para novas ideias.';
+  $('#preview-title').textContent = $('#subject').value.trim() || 'Título da aula';
   $('#preview-date').textContent = $('#date').value.split('-').reverse().join('/');
   $('#preview-model').textContent = pdf ? 'Material em PDF' : $('#template').value;
 }
@@ -47,14 +48,14 @@ async function task(callback, successTitle) {
   working = true;
   const disabledBefore = new Map([...document.querySelectorAll('button, input, select')].map(control => [control, control.disabled]));
   for (const control of disabledBefore.keys()) control.disabled = true;
-  $('#status').classList.remove('error'); $('#status').textContent = 'Preparando seus arquivos…';
+  $('#status').classList.remove('error'); $('#status').textContent = 'Processando…';
   try {
     const result = await callback();
     if (result) {
       resultPath = result.path; $('#result-title').textContent = successTitle;
       $('#result-name').textContent = result.name; $('#result').hidden = false;
-      $('#status').textContent = result.warning || 'Tudo pronto. Seus arquivos anteriores foram preservados.';
-    } else $('#status').textContent = 'Operação cancelada. Seus arquivos continuam como estavam.';
+      $('#status').textContent = result.warning || 'Operação concluída.';
+    } else $('#status').textContent = 'Operação cancelada.';
   } catch (error) { $('#status').textContent = error.message; $('#status').classList.add('error'); }
   finally { working = false; for (const [control, disabled] of disabledBefore) control.disabled = disabled; window.dispatchEvent(new Event('workspace:sync')); }
 }
@@ -78,7 +79,7 @@ $('#lesson-form').addEventListener('submit', event => {
     unwrap(await window.study.openDocument(created.path));
     try { await window.libraryUi.load(); } catch { created.warning='A aula foi criada. Atualize Matérias para vê-la na biblioteca.'; }
     return created;
-  }, 'Sua aula está pronta');
+  }, 'Aula criada');
 });
 $('#run-action').addEventListener('click', () => {
   const operations = { export: [window.study.exportSaved, 'PDF exportado'], backup: [window.study.backupSaved, 'Versão guardada'], pack: [window.study.packageSaved, 'Pacote preparado'] };

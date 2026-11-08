@@ -71,7 +71,7 @@ function orderButtons(type,id,index,length,disabled=false) {
 }
 async function createSubject() {
   const name=await ask({title:'Nova matéria',name:''});if (!name) return;
-  await libraryAction(async()=>{selectedSubject=unwrap(await window.study.createSubject(name));selectedChapter=null;},'Matéria criada. Agora adicione seus capítulos.');
+  await libraryAction(async()=>{selectedSubject=unwrap(await window.study.createSubject(name));selectedChapter=null;},'Matéria criada.');
 }
 async function createChapter() {
   if (!subjectNow()) return;
@@ -107,7 +107,7 @@ function renderLibrary() {
   L('#library-search').placeholder=subject?'Buscar neste capítulo…':'Buscar matéria, capítulo ou anotação…';
   if (!subject) {
     const subjects=[...catalog.subjects].sort((a,b)=>compareNames.compare(a.name,b.name)).filter(s=>searchKey([s.name,...s.chapters.flatMap(c=>[c.name,...c.documents.map(d=>d.title)])].join(' ')).includes(query));
-    if (!subjects.length) {content.append(empty(catalog.subjects.length?'Nenhum resultado':'Sua biblioteca começa aqui',catalog.subjects.length?'Tente outro nome.':'Crie uma matéria, adicione capítulos e reúna suas anotações. As aulas já criadas pelo painel aparecem automaticamente.'));return;}
+    if (!subjects.length) {content.append(empty(catalog.subjects.length?'Nenhum resultado':'Nenhuma matéria',catalog.subjects.length?'Tente outro nome.':'Crie uma matéria para adicionar anotações.'));return;}
     const grid=element('div','subjects-grid');
     for (const s of subjects) {
       const card=button('','card subject-card',()=>{selectedSubject=s.id;selectedChapter=s.chapters[0]?.id||null;L('#library-search').value='';renderLibrary();},`Abrir matéria ${s.name}`);
@@ -126,7 +126,7 @@ function renderLibrary() {
   });
   chapters.append(button('＋ Novo capítulo','button secondary chapter-add',createChapter));layout.append(chapters);
   const documents=element('section','chapter-documents'), chapter=chapterNow();layout.append(documents);content.append(layout);
-  if (!chapter) {documents.append(empty('Organize o primeiro capítulo','Use “Novo capítulo” para criar um tema. Depois adicione arquivos existentes ou crie uma nova anotação.'));return;}
+  if (!chapter) {documents.append(empty('Nenhum capítulo','Selecione “Novo capítulo” para adicionar um capítulo.'));return;}
   const header=element('div','chapter-header'), title=element('div');title.append(element('h2',null,chapter.name),element('p',null,`${counted(chapter.documents.length,'anotação','anotações')} · ordem ajustável`));
   header.append(title,button('Renomear capítulo','button ghost',()=>renameItem('chapter',chapter.id,chapter.name)));documents.append(header);
   const actions=element('div','chapter-actions');actions.append(button('＋ Nova anotação','button primary',newInChapter),button('Adicionar arquivos existentes','button secondary',addDocuments));documents.append(actions);
@@ -134,7 +134,7 @@ function renderLibrary() {
   for (const [value,text] of [['manual','Ordem definida'],['name','Nome (1, 2, 10)'],['added','Data de inclusão']]){const option=element('option',null,text);option.value=value;sort.append(option);}sort.value=documentSort;sort.addEventListener('change',()=>{documentSort=sort.value;renderLibrary();});sortLabel.append(sort);documents.append(sortLabel);
   const docs=[...chapter.documents];if(documentSort==='name')docs.sort((a,b)=>compareNames.compare(a.title,b.title));if(documentSort==='added')docs.sort((a,b)=>a.addedAt.localeCompare(b.addedAt));
   const filtered=docs.filter(d=>searchKey(d.title).includes(query)||searchKey(chapter.name).includes(query)||searchKey(subject.name).includes(query));
-  if (!filtered.length){documents.append(empty(query?'Nenhuma anotação encontrada':'Capítulo pronto para receber suas anotações',query?'Tente outro nome.':'Adicione arquivos .xopp salvos em qualquer pasta ou crie uma nova anotação neste capítulo.'));return;}
+  if (!filtered.length){documents.append(empty(query?'Nenhuma anotação encontrada':'Nenhuma anotação',query?'Tente outro nome.':'Adicione arquivos .xopp ou crie uma anotação neste capítulo.'));return;}
   const list=element('div','document-list');
   for(const doc of filtered){
     const index=docs.indexOf(doc),row=element('article','document-row'),info=element('div','document-info');
