@@ -1,0 +1,35 @@
+# User content and local runtime state must never enter the source repository.
+/documents/
+/profile/
+/backups/
+/runtime/
+/release/
+/build/
+/dist/
+node_modules/
+__pycache__/
+*.pyc
+*.exe
+*.dll
+*.pdb
+*.zip
+*.log
+.env
+.env.*
+!**/.env.example
+.vs/
+.idea/
+*.xopp
+*.xoj
+*.pdf
+*.docx
+*.xlsx
+*.mp4
+*.mkv
+*.autosave*
+catalog.json
+recently-used.xbel
+settings.xml
+
+# native/test and native/development contain upstream technical fixtures,
+# not user notes. Do not add personal documents anywhere in this repository.

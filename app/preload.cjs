@@ -1,0 +1,26 @@
+const { contextBridge, ipcRenderer } = require('electron');
+contextBridge.exposeInMainWorld('study', {
+  workspaceLayout: value => ipcRenderer.invoke('workspace:layout', value),
+  workspaceOpen: () => ipcRenderer.invoke('workspace:open'),
+  workspaceNew: () => ipcRenderer.invoke('workspace:new'),
+  workspaceClose: () => ipcRenderer.invoke('workspace:close'),
+  onWorkspaceEvent: callback => { const listener = (_event, value) => callback(value); ipcRenderer.on('workspace:event', listener); return () => ipcRenderer.removeListener('workspace:event', listener); },
+  bootstrap: () => ipcRenderer.invoke('study:bootstrap'),
+  choosePdf: () => ipcRenderer.invoke('study:choose-pdf'),
+  createLesson: values => ipcRenderer.invoke('study:new', values),
+  exportSaved: () => ipcRenderer.invoke('study:export'),
+  backupSaved: () => ipcRenderer.invoke('study:backup'),
+  packageSaved: () => ipcRenderer.invoke('study:pack'),
+  showOutput: output => ipcRenderer.invoke('study:show-output', output),
+  openDocument: output => ipcRenderer.invoke('study:open-document', output),
+  libraryList: () => ipcRenderer.invoke('library:list'),
+  createSubject: name => ipcRenderer.invoke('library:subject', { name }),
+  createChapter: (subjectId, name) => ipcRenderer.invoke('library:chapter', { subjectId, name }),
+  renameLibraryItem: (type, id, name) => ipcRenderer.invoke('library:rename', { type, id, name }),
+  reorderLibraryItem: (type, id, delta) => ipcRenderer.invoke('library:order', { type, id, delta }),
+  moveLibraryDocument: (documentId, chapterId) => ipcRenderer.invoke('library:move', { documentId, chapterId }),
+  linkLibraryDocuments: chapterId => ipcRenderer.invoke('library:link', { chapterId }),
+  openLibraryDocument: id => ipcRenderer.invoke('library:open', id),
+  showLibraryDocument: id => ipcRenderer.invoke('library:show', id),
+  relinkLibraryDocument: id => ipcRenderer.invoke('library:relink', id)
+});

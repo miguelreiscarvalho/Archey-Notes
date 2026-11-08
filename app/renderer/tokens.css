@@ -1,0 +1,36 @@
+/* Shared foundation for all future laboratory panels. */
+:root {
+  color-scheme: light;
+  --font: "Segoe UI Variable", "Segoe UI", sans-serif;
+  --bg: #eef0f4;
+  --surface: #ffffff;
+  --surface-soft: #f5f6f9;
+  --text: #232933;
+  --muted: #626b79;
+  --line: #dfe3eb;
+  --accent: #2760b5;
+  --accent-hover: #1e4b91;
+  --accent-soft: #e6efff;
+  --sidebar: #fbfbfd;
+  --side-text: #232933;
+  --side-muted: #626b79;
+  --danger: #ad3434;
+  --radius: 18px;
+  --control-radius: 9px;
+  --shadow: 0 6px 26px #2730440a;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #16181d;
+  --surface: #22252c;
+  --surface-soft: #2b2f38;
+  --text: #e4e7ed;
+  --muted: #aab2c0;
+  --line: #3c424e;
+  --accent: #91bcff;
+  --accent-hover: #b4d2ff;
+  --accent-soft: #283e60;
+  --sidebar: #202227;
+  --danger: #ffa5a5;
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }

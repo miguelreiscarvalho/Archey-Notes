@@ -1,0 +1,46 @@
+/* Shared studio identity with the native editor. */
+:root {
+  --nav-surface: var(--surface);
+  --nav-text: var(--text);
+  --nav-muted: var(--muted);
+  --nav-line: var(--line);
+  --nav-blue: var(--accent);
+  --nav-hover: var(--surface-soft);
+  --nav-selected: var(--accent-soft);
+  --nav-track: var(--line);
+  --nav-shadow: 0 4px 24px #2730440a;
+}
+:root[data-theme="dark"] {
+  --nav-surface: var(--surface);
+  --nav-text: var(--text);
+  --nav-muted: var(--muted);
+  --nav-line: var(--line);
+  --nav-blue: var(--accent);
+  --nav-hover: var(--surface-soft);
+  --nav-selected: var(--accent-soft);
+  --nav-track: var(--line);
+}
+.sidebar { border:1px solid var(--line); border-radius:18px; }
+.brand-icon { box-shadow:none; background:var(--accent-soft); border-radius:14px; }
+.nav-item img, .action-icon img { width:22px; height:22px; object-fit:contain; }
+:root[data-theme="dark"] .nav-item img, :root[data-theme="dark"] .action-icon img { filter:brightness(1.9) saturate(.65); }
+.sidebar .nav-item { border-radius:11px; }
+.sidebar .nav-item.active::before { display:none; }
+.action-icon img { width:27px; height:27px; }
+.page-heading { margin-block:30px 26px; }
+h1 { font-size:32px; line-height:1.2; }
+.eyebrow { letter-spacing:1.4px; }
+.status-dot { background:var(--accent); }
+.form-card, .action-card { box-shadow:var(--shadow); }
+.subject-card:hover { border-color:var(--accent); }
+.button { min-height:40px; }
+.local-avatar { background:var(--accent-soft); color:var(--accent); }
+.topbar { color:var(--muted); }
+@media(min-width:1250px) { h1 { font-size:36px; } }
+
+/* User-provided Archey identity; the tool-state icon stays native in the radial hub. */
+.brand-icon img {display:block;width:64px;height:64px;object-fit:contain;flex-shrink:0;}
+.local-avatar img {display:block;width:38px;height:38px;object-fit:contain;flex-shrink:0;}
+
+/* The supplied white/red artwork requires a black backing in both themes. */
+.sidebar .brand-icon, .sidebar .local-avatar {background:#000;overflow:hidden;}

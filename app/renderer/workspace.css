@@ -1,0 +1,7 @@
+/* Workspace navigation stays in the sidebar; the writing surface gets the full height. */
+#editor-surface{position:fixed;background:var(--surface);border:0;border-radius:8px;overflow:hidden}
+#editor-loading{padding:24px;color:var(--muted);font-size:13px}
+.welcome-file-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+html[data-workspace=editor] #welcome-content{display:none}
+html[data-workspace=editor] main{max-width:none;padding:0}
+.sidebar #workspace-editor:disabled{cursor:default;opacity:.45}
