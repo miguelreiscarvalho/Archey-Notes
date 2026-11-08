@@ -1,0 +1,110 @@
+#include "ExportHelper.h"
+
+#include <algorithm>  // for max
+#include <memory>     // for unique_ptr, allocator
+#include <string>     // for string
+
+#include <gio/gio.h>  // for g_file_new_for_commandlin...
+#include <glib.h>     // for g_message, g_error
+
+#include "control/jobs/ImageExport.h"       // for ImageExport, EXPORT_GRAPH...
+#include "control/jobs/ProgressListener.h"  // for DummyProgressListener
+#include "model/Document.h"                 // for Document
+#include "pdf/base/XojPdfExport.h"          // for XojPdfExport
+#include "pdf/base/XojPdfExportFactory.h"   // for XojPdfExportFactory
+#include "util/ElementRange.h"              // for parse, PageRangeVector
+#include "util/i18n.h"                      // for _
+#include "util/raii/GObjectSPtr.h"          // for GObjectSPtr
+
+#include "filesystem.h"  // for operator==, path
+
+namespace ExportHelper {
+
+auto exportImg(Document* doc, fs::path output, const char* range, const char* layerRange, int pngDpi, int pngWidth,
+               int pngHeight, ExportBackgroundType exportBackground) -> int {
+
+    ExportGraphicsFormat format = EXPORT_GRAPHICS_PNG;
+
+    if (output.extension() == ".svg") {
+        format = EXPORT_GRAPHICS_SVG;
+    }
+
+    PageRangeVector exportRange;
+    if (range) {
+        exportRange = ElementRange::parse(range, doc->getPageCount());
+    } else {
+        exportRange.emplace_back(0, doc->getPageCount() - 1);
+    }
+
+    DummyProgressListener progress;
+
+    ImageExport imgExport(doc, std::move(output), format, exportBackground, exportRange);
+
+    if (format == EXPORT_GRAPHICS_PNG) {
+        if (pngDpi > 0) {
+            imgExport.setQualityParameter(EXPORT_QUALITY_DPI, pngDpi);
+        } else if (pngWidth > 0) {
+            imgExport.setQualityParameter(EXPORT_QUALITY_WIDTH, pngWidth);
+        } else if (pngHeight > 0) {
+            imgExport.setQualityParameter(EXPORT_QUALITY_HEIGHT, pngHeight);
+        }
+    }
+
+    imgExport.setLayerRange(layerRange);
+
+    imgExport.exportGraphics(&progress);
+
+    std::string errorMsg = imgExport.getLastErrorMsg();
+    if (!errorMsg.empty()) {
+        g_message("Error exporting image: %s\n", errorMsg.c_str());
+        return -3;
+    }
+
+    g_message("%s", _("Image file successfully created"));
+
+    return 0;  // no error
+}
+
+auto exportPdf(Document* doc, const fs::path& output, const char* range, const char* layerRange,
+               ExportBackgroundType exportBackground, bool progressiveMode, ExportBackend backend) -> int {
+    std::unique_ptr<XojPdfExport> pdfe = XojPdfExportFactory::createExport(doc, nullptr, backend);
+    pdfe->setExportBackground(exportBackground);
+
+    // Check if we're trying to overwrite the background PDF file
+    auto backgroundPDF = doc->getPdfFilepath();
+    try {
+        if (!backgroundPDF.empty() && fs::exists(backgroundPDF)) {
+            if (fs::weakly_canonical(output) == fs::weakly_canonical(backgroundPDF)) {
+                g_message("Do not overwrite the background PDF! This will cause errors!");
+                return -3;  // Return error code for export failure
+            }
+        }
+    } catch (const fs::filesystem_error& fe) {
+        g_warning("The check for overwriting the background failed with: %s", fe.what());
+        return -3;  // Return error code for export failure
+    }
+
+    bool exportSuccess = 0;  // Return of the export job
+
+    pdfe->setLayerRange(layerRange);
+
+    if (range) {
+        // Parse the range
+        PageRangeVector exportRange = ElementRange::parse(range, doc->getPageCount());
+        // Do the export
+        exportSuccess = pdfe->createPdf(output, exportRange, progressiveMode);
+    } else {
+        exportSuccess = pdfe->createPdf(output, progressiveMode);
+    }
+
+    if (!exportSuccess) {
+        g_message("%s", pdfe->getLastError().c_str());
+        return -3;
+    }
+
+    g_message("%s", _("PDF file successfully created"));
+
+    return 0;  // no error
+}
+
+}  // namespace ExportHelper
