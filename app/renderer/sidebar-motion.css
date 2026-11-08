@@ -1,6 +1,10 @@
 /* Motion adapted from the supplied sidebar video; all actions remain unchanged. */
-:root {--nav-motion-accent:#f5262b;--nav-motion-glow:rgba(245,38,43,.19);--nav-motion-duration:360ms;--nav-motion-ease:cubic-bezier(.22,1,.36,1)}
-:root[data-theme=dark]{--nav-motion-accent:#f5262b;--nav-motion-glow:rgba(245,38,43,.22)}
+:root {--nav-motion-accent:#f5262b;--nav-motion-glow:rgba(245,38,43,.19);--nav-motion-duration:360ms;--nav-motion-ease:cubic-bezier(.22,1,.36,1);--nav-ink:#000;--nav-icon-filter:brightness(0)}
+:root[data-theme=dark]{--nav-motion-accent:#f5262b;--nav-motion-glow:rgba(245,38,43,.22);--nav-ink:#fff;--nav-icon-filter:brightness(0) invert(1)}
+.sidebar .brand,.sidebar .sidebar-footer,.sidebar .theme-option{color:var(--nav-ink)}
+.sidebar .nav-item,.sidebar .nav-item.active,.sidebar .nav-item:hover:not(:disabled){color:var(--nav-ink)}
+.sidebar .nav-item img,.sidebar .nav-toggle img,.sidebar .theme-option img,.action-icon img{filter:var(--nav-icon-filter)}
+:root[data-theme=dark] .sidebar .nav-item img,:root[data-theme=dark] .action-icon img{filter:var(--nav-icon-filter)}
 .sidebar{isolation:isolate;border:1px solid var(--nav-line);background:linear-gradient(155deg,var(--nav-surface),var(--surface));box-shadow:0 14px 36px #00000018,inset 0 1px 0 #ffffff10}
 .nav-motion-ready .sidebar{transition:width var(--nav-motion-duration) var(--nav-motion-ease)}
 .nav-motion-ready[data-nav=expanded] .sidebar{transition-delay:150ms}
@@ -15,13 +19,12 @@
 .sidebar .nav-item,:root[data-nav=collapsed] .sidebar .nav-item{padding:12px 12px 12px 48px;justify-content:flex-start;gap:0;z-index:1;transition:color 160ms ease,background-color 160ms ease}
 .sidebar .nav-item .nav-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);transition:transform 180ms var(--nav-motion-ease),filter 180ms ease}
 .sidebar .nav-item:hover:not(:disabled) .nav-icon,.sidebar .nav-item:focus-visible .nav-icon{transform:translateY(-50%) scale(1.09);filter:drop-shadow(0 0 4px var(--nav-motion-glow))}
-.sidebar .nav-item.active{background:transparent;color:var(--nav-motion-accent)}
+.sidebar .nav-item.active{background:transparent;color:var(--nav-ink)}
 .sidebar .nav-item:hover:not(:disabled){background:transparent}
 .sidebar .nav-item.active::before{display:none}
 .nav-motion-indicator{position:absolute;left:18px;right:18px;top:0;height:48px;border-radius:10px;background:linear-gradient(90deg,var(--nav-motion-glow),transparent 92%);pointer-events:none;z-index:0;opacity:0;transform:translateY(0);transition:transform 260ms var(--nav-motion-ease),opacity 160ms ease,height 160ms ease;will-change:transform}
 .nav-motion-indicator[data-visible=true]{opacity:1}
 .nav-motion-indicator::before{content:"";position:absolute;left:-15px;top:10px;bottom:10px;width:4px;border-radius:5px;background:var(--nav-motion-accent);box-shadow:0 0 7px var(--nav-motion-accent),0 0 17px var(--nav-motion-accent)}
-.nav-motion-indicator::after{content:"";position:absolute;right:8px;top:50%;width:5px;height:5px;border-radius:50%;transform:translateY(-50%);background:var(--nav-motion-accent);box-shadow:0 0 9px var(--nav-motion-accent)}
 .nav-toggle{transition:background-color 160ms ease,box-shadow 160ms ease}
 .nav-toggle:hover{box-shadow:0 0 12px var(--nav-motion-glow)}
 .nav-toggle img{transition:transform 300ms var(--nav-motion-ease)}

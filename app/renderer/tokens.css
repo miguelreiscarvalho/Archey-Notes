@@ -21,16 +21,16 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #16181d;
-  --surface: #22252c;
-  --surface-soft: #2b2f38;
+  --bg: #101114;
+  --surface: #191b20;
+  --surface-soft: #22252b;
   --text: #e4e7ed;
   --muted: #aab2c0;
-  --line: #3c424e;
+  --line: #30333a;
   --accent: #91bcff;
   --accent-hover: #b4d2ff;
   --accent-soft: #283e60;
-  --sidebar: #202227;
+  --sidebar: #15171b;
   --danger: #ffa5a5;
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
