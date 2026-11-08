@@ -1,6 +1,6 @@
 /* Motion adapted from the supplied sidebar video; all actions remain unchanged. */
-:root {--nav-motion-accent:#8255d0;--nav-motion-glow:rgba(143,88,236,.19);--nav-motion-duration:360ms;--nav-motion-ease:cubic-bezier(.22,1,.36,1)}
-:root[data-theme=dark]{--nav-motion-accent:#bd94ff;--nav-motion-glow:rgba(161,104,255,.22)}
+:root {--nav-motion-accent:#f5262b;--nav-motion-glow:rgba(245,38,43,.19);--nav-motion-duration:360ms;--nav-motion-ease:cubic-bezier(.22,1,.36,1)}
+:root[data-theme=dark]{--nav-motion-accent:#f5262b;--nav-motion-glow:rgba(245,38,43,.22)}
 .sidebar{isolation:isolate;border:1px solid var(--nav-line);background:linear-gradient(155deg,var(--nav-surface),var(--surface));box-shadow:0 14px 36px #00000018,inset 0 1px 0 #ffffff10}
 .nav-motion-ready .sidebar{transition:width var(--nav-motion-duration) var(--nav-motion-ease)}
 .nav-motion-ready[data-nav=expanded] .sidebar{transition-delay:150ms}
