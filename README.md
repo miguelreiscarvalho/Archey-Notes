@@ -29,7 +29,7 @@ Esta prévia é para Windows 10/11 x64. O pacote inclui os runtimes do editor, E
 
 ## Estado do projeto
 
-Prévia experimental `0.1.0-preview`, baseada no Xournal++ 1.3.8. Reconhecimento de texto, entrada por caneta/toque e integração das janelas Windows ainda precisam de testes em mais equipamentos. O código do editor permanece C++/GTK; o Electron organiza o ambiente externo. A referência visual de animação foi adaptada à tecnologia do projeto.
+Prévia experimental `0.1.1-preview`, baseada no Xournal++ 1.3.8. Reconhecimento de texto, entrada por caneta/toque e integração das janelas Windows ainda precisam de testes em mais equipamentos. O código do editor permanece C++/GTK; o Electron organiza o ambiente externo. A referência visual de animação foi adaptada à tecnologia do projeto.
 
 ## Código, licença e contribuição
 
