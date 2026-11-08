@@ -1,4 +1,4 @@
-# Validação da prévia 0.1.1
+# Validação da prévia 0.1.2
 
 - Auditoria do pacote: zero matérias, zero documentos pessoais; somente três páginas-modelo vazias geradas do zero.
 - Perfil novo, sem catálogo, arquivos recentes, configurações pessoais, autosaves, cookies ou histórico do laboratório.
@@ -21,3 +21,12 @@
 - Nova cópia descartável iniciou com zero matérias e zero documentos, criou uma nota com Python incorporado e abriu o editor nativo integrado.
 - Os 14 testes Node passaram novamente. Os ensaios de interface e animação das alterações também passaram.
 - A captura docs/clean-home.png mostra a biblioteca vazia da versão atual.
+
+## Atualização 0.1.2-preview
+
+- Ícones e textos da navegação pretos no tema claro e brancos no tema escuro.
+- Ícones da seta e do seletor de tema seguem o mesmo padrão monocromático.
+- Indicador vermelho e animações mantidos; ponto da seleção removido.
+- Fundo, superfícies e bordas do tema escuro mais escuros.
+- Ensaio de movimento, foco/ponteiro, expansão e centralização passou. Capturas dos dois temas conferidas com biblioteca vazia.
+- Nenhuma lógica nativa, catálogo ou documento de usuário foi alterado.
