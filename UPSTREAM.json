@@ -2,6 +2,6 @@
   "project": "Xournal++",
   "url": "https://github.com/xournalpp/xournalpp",
   "version": "1.3.8",
-  "modifiedNativeCommit": "6700304aae9bef64ab3a37456a6dc8f1e78c976a",
+  "modifiedNativeCommit": "17c3d8ec612f3595a1d6b0eb690bfcb5f723424a",
   "note": "Native sources exported without the laboratory Git history."
 }

@@ -417,12 +417,14 @@ void RadialMenu::layout() {
   auto& item=*options[i];
   gtk_widget_set_visible(item.widget,expanded&&(settingsOpen||settingsProgress>0));
   double delay=.025*i;
-  double p=xoj::radial::smooth(std::clamp((settingsProgress-delay)/(1-delay),0.0,1.0));
+  const double phase=std::clamp((settingsProgress-delay)/(1-delay),0.0,1.0);
+  double p=xoj::radial::smooth(phase);
+  const double distance=xoj::radial::spring(phase);
   int size=48+static_cast<int>(4*xoj::radial::smooth(item.hover));
   gtk_widget_set_size_request(item.widget,size,size);
   double target=xoj::radial::optionAngle(parentAngle+(compact?PI:0),i,options.size(),optionRadius);
-  double angle=parentAngle+(target-parentAngle)*p;
-  double radius=toolRadius+(optionRadius-toolRadius)*p;
+  double angle=parentAngle+(target-parentAngle)*distance;
+  double radius=std::min(diameter/2-size/2-4,toolRadius+(optionRadius-toolRadius)*distance);
   gtk_fixed_move(GTK_FIXED(fixed),item.widget,static_cast<int>(center+std::cos(angle)*radius-size/2),static_cast<int>(center+std::sin(angle)*radius-size/2));
   gtk_widget_set_opacity(item.widget,p);sensitive(item.widget,open&&settingsOpen&&settingsProgress>.8);
  }
