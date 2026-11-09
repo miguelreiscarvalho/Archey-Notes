@@ -111,6 +111,9 @@ RadialMenu::RadialMenu(MainWindow* window,GtkOverlay* overlay):window(window),ov
  gtk_widget_set_can_focus(hub,true);gtk_widget_set_size_request(hub,60,60);
  gtk_widget_add_events(hub,GDK_BUTTON_PRESS_MASK|GDK_BUTTON_RELEASE_MASK|GDK_POINTER_MOTION_MASK|GDK_TOUCH_MASK);
  hubImage=gtk_image_new();gtk_container_add(GTK_CONTAINER(hub),hubImage);gtk_widget_show(hubImage);
+ g_signal_connect(hub,"notify::scale-factor",G_CALLBACK((+[](GObject*,GParamSpec*,gpointer data) {
+  static_cast<RadialMenu*>(data)->updateHubIcon();
+ })),this);
  gtk_fixed_put(GTK_FIXED(fixed),hub,2,2);gtk_widget_show(hub);
  accessible(hub,"Menu radial: toque para abrir; arraste para mover");
  atk_object_set_role(gtk_widget_get_accessible(hub),ATK_ROLE_PUSH_BUTTON);
@@ -252,6 +255,34 @@ void RadialMenu::scheduleRefresh() {
  if(refreshIdle)return;
  refreshIdle=g_idle_add(+[](gpointer data)->gboolean {auto* self=static_cast<RadialMenu*>(data);self->refreshIdle=0;self->refresh();return G_SOURCE_REMOVE;},this);
 }
+void RadialMenu::updateHubIcon() {
+ const auto& entry=entryFor(active);
+ auto icon=IconNameHelper(window->getControl()->getSettings()).iconName(entry.icon);
+ auto* theme=gtk_icon_theme_get_default();
+ if(!gtk_icon_theme_has_icon(theme,icon.c_str()))icon=entry.icon;
+ if(expanded) {
+  gtk_image_set_from_icon_name(GTK_IMAGE(hubImage),icon.c_str(),GTK_ICON_SIZE_LARGE_TOOLBAR);
+  return;
+ }
+ // Keep the selected tool's silhouette and alpha; recolor only the closed hub.
+ // A surface with device scale preserves a 24px logical icon on HiDPI screens.
+ const int scale=std::max(1,gtk_widget_get_scale_factor(hub));
+ auto* source=gtk_icon_theme_load_icon_for_scale(theme,icon.c_str(),24,scale,GTK_ICON_LOOKUP_FORCE_SIZE,nullptr);
+ if(!source) {
+  gtk_image_set_from_icon_name(GTK_IMAGE(hubImage),icon.c_str(),GTK_ICON_SIZE_LARGE_TOOLBAR);
+  return;
+ }
+ auto* white=gdk_pixbuf_copy(source);g_object_unref(source);
+ if(!white)return;
+ auto* pixels=gdk_pixbuf_get_pixels(white);
+ const int stride=gdk_pixbuf_get_rowstride(white),channels=gdk_pixbuf_get_n_channels(white);
+ for(int y=0;y<gdk_pixbuf_get_height(white);++y)for(int x=0;x<gdk_pixbuf_get_width(white);++x) {
+  auto* pixel=pixels+y*stride+x*channels;pixel[0]=255;pixel[1]=255;pixel[2]=255;
+ }
+ auto* surface=gdk_cairo_surface_create_from_pixbuf(white,scale,nullptr);
+ gtk_image_set_from_surface(GTK_IMAGE(hubImage),surface);
+ cairo_surface_destroy(surface);g_object_unref(white);
+}
 void RadialMenu::refresh() {
  auto* tool=window->getControl()->getToolHandler()->getActiveTool();
  if(active!=tool->getToolType()) {active=tool->getToolType();settingsTool=entries[primaryIndex(active)].type;closePopover();if(settingsOpen)rebuildOptions();}
@@ -264,8 +295,7 @@ void RadialMenu::refresh() {
   if(selected)gtk_widget_set_state_flags(tools[i]->widget,GTK_STATE_FLAG_CHECKED,false);
   else gtk_widget_unset_state_flags(tools[i]->widget,GTK_STATE_FLAG_CHECKED);
  }
- auto icon=IconNameHelper(window->getControl()->getSettings()).iconName(entry.icon);
- gtk_image_set_from_icon_name(GTK_IMAGE(hubImage),icon.c_str(),GTK_ICON_SIZE_LARGE_TOOLBAR);
+ updateHubIcon();
  std::ostringstream text;text<<_(entry.label);
  const char* sizeNames[]={N_("Very Fine"),N_("Fine"),N_("Medium"),N_("Thick"),N_("Very Thick")};
  if(tool->hasCapability(TOOL_CAP_SIZE))text<<"  ·  "<<_(sizeNames[std::clamp(int(tool->getSize()),0,4)]);
@@ -315,7 +345,7 @@ void RadialMenu::setOpen(bool value) {
   gtk_widget_show(catcher);
   gtk_widget_grab_focus(hub);
  }
- animate();layout();
+ updateHubIcon();animate();layout();
 }
 void RadialMenu::openAtPointer() {
  auto* top=window->getWindow();
@@ -339,6 +369,7 @@ void RadialMenu::openAtPointer() {
 }
 void RadialMenu::setEnabled(bool value) {
  enabled=value;closePopover();open=false;expanded=false;settingsOpen=false;progress=0;settingsProgress=0;
+ updateHubIcon();
  if(tick) {gtk_widget_remove_tick_callback(fixed,tick);tick=0;}
  for(auto* group:{&tools,&options})for(auto& item:*group)gtk_widget_hide(item->widget);
  gtk_widget_hide(catcher);gtk_widget_hide(pager);
@@ -371,7 +402,9 @@ bool RadialMenu::frame(GdkFrameClock* clock) {
   advance(item->hover,highlight,130);moving|=item->hover!=(highlight?1:0);
  }
  if(!open&&progress==0) {
+  const bool wasExpanded=expanded;
   expanded=false;settingsOpen=false;gtk_widget_hide(catcher);gtk_widget_hide(pager);
+  if(wasExpanded)updateHubIcon();
   for(auto* group:{&tools,&options})for(auto& item:*group)gtk_widget_hide(item->widget);
  }
  layout();gtk_widget_queue_resize(GTK_WIDGET(overlay));return moving;

@@ -52,6 +52,7 @@ private:
     void bind(GtkWidget* widget, Action action, GVariant* target = nullptr);
     void activate(Action action, GVariant* target = nullptr);
     void refresh();
+    void updateHubIcon();
     void rebuildOptions();
     void scheduleRefresh();
     void animate();
