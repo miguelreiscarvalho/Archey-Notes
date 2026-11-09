@@ -260,6 +260,22 @@ StudioInterface::StudioInterface(MainWindow* window, GtkOverlay* overlay, Radial
     })), this);
     g_action_map_add_action(G_ACTION_MAP(window->getWindow()), G_ACTION(action));
     g_object_unref(action);
+    auto* scribble = g_simple_action_new_stateful("scribble-erase", nullptr,
+        g_variant_new_boolean(settings->getScribbleEraseEnabled()));
+    g_signal_connect(scribble, "activate", G_CALLBACK((+[](GSimpleAction* action, GVariant*, gpointer) {
+        auto* current = g_action_get_state(G_ACTION(action));
+        const bool enabled = !g_variant_get_boolean(current);
+        g_variant_unref(current);
+        g_action_change_state(G_ACTION(action), g_variant_new_boolean(enabled));
+    })), this);
+    g_signal_connect(scribble, "change-state", G_CALLBACK((+[](GSimpleAction* action, GVariant* value, gpointer data) {
+        if (!value || !g_variant_is_of_type(value, G_VARIANT_TYPE_BOOLEAN)) return;
+        auto* self = static_cast<StudioInterface*>(data);
+        self->window->getControl()->getSettings()->setScribbleEraseEnabled(g_variant_get_boolean(value));
+        g_simple_action_set_state(action, value);
+    })), this);
+    g_action_map_add_action(G_ACTION_MAP(window->getWindow()), G_ACTION(scribble));
+    g_object_unref(scribble);
     g_signal_connect(modePicker, "changed", G_CALLBACK((+[](GtkComboBox* picker, gpointer data) {
         auto* self = static_cast<StudioInterface*>(data);
         if (!self->updatingPicker) if (auto* id = gtk_combo_box_get_active_id(picker)) self->setMode(id);
@@ -294,6 +310,7 @@ StudioInterface::~StudioInterface() {
     g_signal_handlers_disconnect_by_data(overlay, this);
     g_signal_handlers_disconnect_by_data(window->getWindow(), this);
     g_action_map_remove_action(G_ACTION_MAP(window->getWindow()), "interface-mode");
+    g_action_map_remove_action(G_ACTION_MAP(window->getWindow()), "scribble-erase");
     gtk_widget_destroy(GTK_WIDGET(g_object_get_data(G_OBJECT(header), "studio-footer")));
     gtk_widget_destroy(dock); gtk_widget_destroy(header);
 }

@@ -325,6 +325,8 @@ public:
 
     double getStrokeRecognizerMinSize() const;
     void setStrokeRecognizerMinSize(double value);
+    bool getScribbleEraseEnabled() const;
+    void setScribbleEraseEnabled(bool enabled);
 
     StylusCursorType getStylusCursorType() const;
     void setStylusCursorType(StylusCursorType stylusCursorType);
@@ -1046,6 +1048,7 @@ private:
      * Minimum size of stroke to detect shape
      */
     double strokeRecognizerMinSize{};
+    bool scribbleEraseEnabled = true;
 
     /// Touchscreens act like multi-touch-aware pens.
     bool touchDrawing{};

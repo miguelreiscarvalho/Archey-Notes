@@ -683,6 +683,12 @@
    <section>
     <submenu>
      <attribute name="label" translatable="yes">Pen _Options</attribute>
+     <section>
+      <item>
+       <attribute name="label">Riscar para apagar</attribute>
+       <attribute name="action">win.scribble-erase</attribute>
+      </item>
+     </section>
      <section id="menu11">
       <item>
        <attribute name="label" translatable="yes">_very fine</attribute>

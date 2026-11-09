@@ -95,6 +95,8 @@ protected:
     bool hasPressure;
 
 private:
+    bool tryScribbleErase(Layer* layer);
+    gint64 strokeStartedAt = 0;
     /**
      * @brief Pointer to the Stabilizer instance
      */

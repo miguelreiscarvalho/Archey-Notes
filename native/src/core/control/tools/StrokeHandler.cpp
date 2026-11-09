@@ -1,10 +1,13 @@
 #include "StrokeHandler.h"
+#include "ScribbleEraseGesture.h"
 #include "control/TracosController.h"
 
 #include <algorithm>  // for max, min
 #include <cmath>      // for ceil, pow, abs
 #include <limits>     // for numeric_limits
 #include <memory>     // for unique_ptr, mak...
+#include <mutex>
+#include <optional>
 #include <utility>    // for move
 #include <vector>     // for vector
 
@@ -27,6 +30,7 @@
 #include "model/Stroke.h"                                   // for Stroke, STROKE_...
 #include "model/XojPage.h"                                  // for XojPage
 #include "undo/InsertUndoAction.h"                          // for InsertUndoAction
+#include "undo/DeleteUndoAction.h"
 #include "undo/RecognizerUndoAction.h"                      // for RecognizerUndoA...
 #include "undo/UndoRedoHandler.h"                           // for UndoRedoHandler
 #include "util/Assert.h"                                    // for xoj_assert
@@ -169,6 +173,7 @@ void StrokeHandler::onButtonReleaseEvent(const PositionInputData& pos, double zo
     finalizeStroke(pos.pressure);
 
     Layer* layer = page->getSelectedLayer();
+    if (tryScribbleErase(layer)) return;
 
     UndoRedoHandler* undo = control->getUndoRedoHandler();
     undo->addUndoAction(std::make_unique<InsertUndoAction>(page, layer, stroke.get()));
@@ -214,6 +219,88 @@ void StrokeHandler::onButtonReleaseEvent(const PositionInputData& pos, double zo
 
     page->fireElementChanged(ptr);
     control->getTracosController()->strokeFinished(page, layer, ptr);
+}
+
+bool StrokeHandler::tryScribbleErase(Layer* layer) {
+    const auto drawing = control->getToolHandler()->getDrawingType();
+    if (!control->getSettings()->getScribbleEraseEnabled() || !layer || !layer->isVisible() ||
+        stroke->getToolType() != StrokeTool::PEN ||
+        (drawing != DRAWING_TYPE_DEFAULT && drawing != DRAWING_TYPE_SHAPE_RECOGNIZER) ||
+        !strokeStartedAt || g_get_monotonic_time()-strokeStartedAt > 3000000)
+        return false;
+    const auto& points = stroke->getPointVector();
+    const auto gesture = xoj::input::ScribbleEraseGesture::detect(points);
+    if (!gesture) return false;
+
+    auto* doc = control->getDocument();
+    std::unique_lock transaction(*doc);
+    std::vector<Stroke*> targets;
+    size_t budget = 2000000;
+    const double padding = std::max(2.0, stroke->getWidth());
+    const auto bounds = stroke->boundingRect();
+    for (const auto& owned : layer->getElements()) {
+        auto* element = owned.get();
+        if (element->getType() != ELEMENT_STROKE) continue;
+        auto* candidate = static_cast<Stroke*>(element);
+        if (candidate->getToolType() != StrokeTool::PEN || !candidate->getPointCount()) continue;
+        const double left = candidate->getX()-padding, top = candidate->getY()-padding;
+        const double right = candidate->getX()+candidate->getElementWidth()+padding;
+        const double bottom = candidate->getY()+candidate->getElementHeight()+padding;
+        if (right < bounds.x || left > bounds.x+bounds.width ||
+            bottom < bounds.y || top > bounds.y+bounds.height) continue;
+        // Do not erase an entire long connected sentence for a small local mark.
+        const double candidateSpan = std::abs(gesture->axisX)*candidate->getElementWidth() +
+                                     std::abs(gesture->axisY)*candidate->getElementHeight();
+        if (candidateSpan > gesture->span*1.6) continue;
+        std::optional<size_t> firstHit;
+        bool crossedRepeatedly = false;
+        for (size_t pass = 0; pass < gesture->passes.size() && !crossedRepeatedly; ++pass) {
+            const auto [start, end] = gesture->passes[pass];
+            bool hit = false;
+            for (size_t i = start; i < end && !hit; ++i) {
+                const auto& a = points[i]; const auto& b = points[i+1];
+                const auto steps = std::max(1, int(std::ceil(std::hypot(b.x-a.x, b.y-a.y)/1.5)));
+                for (int step = 0; step <= steps && !hit; ++step) {
+                    const double t = double(step)/steps, x = a.x+(b.x-a.x)*t, y = a.y+(b.y-a.y)*t;
+                    if (x < left || x > right || y < top || y > bottom) continue;
+                    // Exhaustion keeps the gesture as ink; no partial deletion occurs.
+                    if (budget < candidate->getPointCount()) return false;
+                    budget -= candidate->getPointCount();
+                    hit = candidate->intersects(x, y, padding);
+                }
+            }
+            if (hit) {
+                // Adjacent passes share a turning point; that alone is not enough.
+                if (firstHit && pass >= *firstHit+2) crossedRepeatedly = true;
+                if (!firstHit) firstHit = pass;
+            }
+        }
+        if (crossedRepeatedly) targets.push_back(candidate);
+    }
+    if (targets.empty()) return false;
+
+    auto deletion = std::make_unique<DeleteUndoAction>(page, true);
+    Range dirty(stroke->boundingRect());
+    std::vector<Element*> removed;
+    // Reverse removal preserves the original insertion positions for undo.
+    for (auto it = targets.rbegin(); it != targets.rend(); ++it) {
+        auto entry = layer->removeElement(*it);
+        if (entry.pos == Element::Index(-1)) continue;
+        dirty.addPoint((*it)->getX(), (*it)->getY());
+        dirty.addPoint((*it)->getX()+(*it)->getElementWidth(), (*it)->getY()+(*it)->getElementHeight());
+        removed.push_back(*it);
+        deletion->addElement(layer, std::move(entry.e), entry.pos);
+    }
+    transaction.unlock();
+    if (removed.empty()) return false;
+    // Cancel in-flight recognition before any removed stroke can be revisited.
+    control->getTracosController()->penCancelled();
+    control->getUndoRedoHandler()->addUndoAction(std::move(deletion));
+    dirty.addPadding(padding);
+    viewPool->dispatchAndClear(xoj::view::StrokeToolView::CANCELLATION_REQUEST, dirty);
+    stroke.reset();
+    for (auto* element : removed) page->fireElementChanged(element);
+    return true;
 }
 
 void StrokeHandler::strokeRecognizerDetected(std::unique_ptr<Stroke> recognized, Layer* layer) {
@@ -265,6 +352,7 @@ void StrokeHandler::strokeRecognizerDetected(std::unique_ptr<Stroke> recognized,
 }
 
 void StrokeHandler::onButtonPressEvent(const PositionInputData& pos, double zoom) {
+    strokeStartedAt = g_get_monotonic_time();
     control->getTracosController()->penDown();
     xoj_assert(!stroke);
 

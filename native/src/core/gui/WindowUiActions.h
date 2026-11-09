@@ -9,7 +9,7 @@ namespace xoj::ui {
 // Share parameter metadata with menu validation so unknown actions still fail the test.
 inline auto windowActionParameterType(std::string_view name) -> std::optional<const GVariantType*> {
     if (name == "interface-mode") return G_VARIANT_TYPE_STRING;
-    if (name == "radial-menu" || name == "radial-menu-at-pointer" ||
+    if (name == "radial-menu" || name == "radial-menu-at-pointer" || name == "scribble-erase" ||
         name == "document-tab-close" || name == "document-tab-next")
         return std::optional<const GVariantType*>(static_cast<const GVariantType*>(nullptr));
     return std::nullopt;

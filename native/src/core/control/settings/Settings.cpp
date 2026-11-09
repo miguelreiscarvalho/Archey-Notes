@@ -147,6 +147,7 @@ void Settings::loadDefault() {
     this->snapGridSize = DEFAULT_GRID_SIZE;
 
     this->strokeRecognizerMinSize = 40;
+    this->scribbleEraseEnabled = true;
 
     this->touchDrawing = false;
     this->gtkTouchInertialScrolling = true;
@@ -603,6 +604,8 @@ void Settings::parseItem(xmlDocPtr doc, xmlNodePtr cur) {
         this->snapGridTolerance = tempg_ascii_strtod(reinterpret_cast<const char*>(value), nullptr);
     } else if (xmlStrcmp(name, reinterpret_cast<const xmlChar*>("strokeRecognizerMinSize")) == 0) {
         this->strokeRecognizerMinSize = tempg_ascii_strtod(reinterpret_cast<const char*>(value), nullptr);
+    } else if (xmlStrcmp(name, reinterpret_cast<const xmlChar*>("scribbleEraseEnabled")) == 0) {
+        this->scribbleEraseEnabled = xmlStrcmp(value, reinterpret_cast<const xmlChar*>("true")) == 0;
     } else if (xmlStrcmp(name, reinterpret_cast<const xmlChar*>("touchDrawing")) == 0) {
         this->touchDrawing = xmlStrcmp(value, reinterpret_cast<const xmlChar*>("true")) == 0;
     } else if (xmlStrcmp(name, reinterpret_cast<const xmlChar*>("gtkTouchInertialScrolling")) == 0) {
@@ -1119,6 +1122,7 @@ void Settings::save() {
     SAVE_DOUBLE_PROP(snapGridSize);
 
     SAVE_DOUBLE_PROP(strokeRecognizerMinSize);
+    SAVE_BOOL_PROP(scribbleEraseEnabled);
 
     SAVE_BOOL_PROP(touchDrawing);
     SAVE_BOOL_PROP(gtkTouchInertialScrolling);
@@ -1624,6 +1628,12 @@ void Settings::setSnapGridSize(double gridSize) {
 }
 
 auto Settings::getStrokeRecognizerMinSize() const -> double { return this->strokeRecognizerMinSize; };
+bool Settings::getScribbleEraseEnabled() const { return scribbleEraseEnabled; }
+void Settings::setScribbleEraseEnabled(bool enabled) {
+    if (scribbleEraseEnabled == enabled) return;
+    scribbleEraseEnabled = enabled;
+    save();
+}
 void Settings::setStrokeRecognizerMinSize(double value) {
     if (this->strokeRecognizerMinSize == value) {
         return;
