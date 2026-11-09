@@ -48,3 +48,7 @@ Contribuições com correções, acessibilidade, testes com caneta e melhorias d
 ---
 
 **English:** Archey Notes is an independent open-source project improving the Xournal++ handwriting and study experience through an Electron study workspace, animated navigation, a native floating radial menu and experimental Windows Ink handwriting-to-text. It preserves the native C++/GTK editor. Windows previews ship with an empty library and no developer documents. GPL-2.0-or-later; third-party licenses are preserved.
+
+## Em desenvolvimento
+
+A branch de desenvolvimento acrescenta uma paleta no cabeçalho, o gesto **Riscar para apagar** nas opções da caneta e uma mola discreta de aproximadamente 200 ms ao abrir o menu radial. O gesto exige várias passadas rápidas sobre traços da camada atual e apaga traços inteiros com desfazer; texto já convertido não é removido. Pode ser desativado nas opções da caneta. Esses recursos foram compilados, mas não passaram por testes funcionais a pedido do usuário; ainda não integram o download 0.1.2-preview.

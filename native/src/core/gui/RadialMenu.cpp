@@ -364,7 +364,7 @@ bool RadialMenu::frame(GdkFrameClock* clock) {
   if(!animations){value=target?1:0;return;}
   value=std::clamp(value+(target?1:-1)*dt/duration,0.0,1.0);
  };
- advance(progress,open,open?220:180);advance(settingsProgress,open&&settingsOpen,180);
+ advance(progress,open,open?200:180);advance(settingsProgress,open&&settingsOpen,180);
  bool moving=progress!=(open?1:0)||settingsProgress!=((open&&settingsOpen)?1:0);
  for(auto* group:{&tools,&options})for(auto& item:*group) {
   bool highlight=item->hovered||item->focused;
@@ -402,11 +402,13 @@ void RadialMenu::layout() {
   bool onPage=!compact||int(i/4)==toolPage;
   gtk_widget_set_visible(item.widget,expanded&&(onPage||(selected&&(settingsOpen||settingsProgress>0))));
   double delay=.025*(compact?i%4:i);
-  double p=xoj::radial::smooth(std::clamp((progress-delay)/(1-delay),0.0,1.0));
+  const double phase=std::clamp((progress-delay)/(1-delay),0.0,1.0);
+  double p=xoj::radial::smooth(phase);
+  const double distance=xoj::radial::spring(phase);
   int size=58+static_cast<int>(6*xoj::radial::smooth(item.hover));
   gtk_widget_set_size_request(item.widget,size,size);
   double angle=compact?-PI/2+2*PI*(i%4)/4:item.angle;
-  gtk_fixed_move(GTK_FIXED(fixed),item.widget,static_cast<int>(center+std::cos(angle)*toolRadius*p-size/2),static_cast<int>(center+std::sin(angle)*toolRadius*p-size/2));
+  gtk_fixed_move(GTK_FIXED(fixed),item.widget,static_cast<int>(center+std::cos(angle)*toolRadius*distance-size/2),static_cast<int>(center+std::sin(angle)*toolRadius*distance-size/2));
   double visible=compact&&!selected?1-xoj::radial::smooth(settingsProgress):1;
   gtk_widget_set_opacity(item.widget,p*visible);
   sensitive(item.widget,open&&progress>.8&&visible>.8);
