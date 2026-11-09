@@ -722,6 +722,7 @@ void MainWindow::reloadToolbars() {
     ToolbarData* d = getSelectedToolbar();
     this->clearToolbar();
     this->toolbarSelected(d);
+    if (studioInterface) studioInterface->reloadPalette();
 }
 
 auto MainWindow::getSelectedToolbar() const -> ToolbarData* { return this->selectedToolbar; }

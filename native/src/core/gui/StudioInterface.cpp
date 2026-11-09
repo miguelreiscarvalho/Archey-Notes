@@ -13,6 +13,8 @@
 #include "control/settings/Settings.h"
 #include "control/zoom/ZoomControl.h"
 #include "gui/toolbarMenubar/icon/ColorIcon.h"
+#include "gui/toolbarMenubar/model/ColorPalette.h"
+#include "util/GtkUtil.h"
 #include "util/PathUtil.h"
 #include "util/i18n.h"
 
@@ -68,6 +70,12 @@ StudioInterface::StudioInterface(MainWindow* window, GtkOverlay* overlay, Radial
     .studio-header {background:@theme_bg_color;padding:9px 16px;border-bottom:1px solid alpha(@theme_fg_color,.09);}
     .studio-header button, .studio-header combobox button {border-radius:10px;min-height:30px;box-shadow:none;}
     .studio-header .studio-title {font-weight:600;}
+    .studio-header .studio-colors {padding:0 8px;}
+    .studio-header .studio-swatch {padding:4px;min-width:26px;min-height:26px;
+        border:1px solid transparent;background:transparent;}
+    .studio-header .studio-swatch:hover {background:alpha(@theme_selected_bg_color,.10);}
+    .studio-header .studio-swatch:checked {background:alpha(@theme_selected_bg_color,.17);
+        border-color:@theme_selected_bg_color;}
     .studio-subtitle {font-size:11px;opacity:.65;}
     .studio-dock {background:@theme_bg_color;border:1px solid alpha(@theme_fg_color,.12);border-radius:18px;
         padding:7px;box-shadow:0 5px 18px alpha(black,.17);}
@@ -110,12 +118,40 @@ StudioInterface::StudioInterface(MainWindow* window, GtkOverlay* overlay, Radial
     gtk_box_pack_start(GTK_BOX(titles), subtitle, false, false, 0);
     gtk_widget_set_margin_start(titles, 10);
     gtk_box_pack_start(GTK_BOX(header), titles, true, true, 0);
-    actionButton(header, "Desfazer", "edit-undo", Action::UNDO);
-    actionButton(header, "Refazer", "edit-redo", Action::REDO);
-    auto* saveButton = actionButton(header, "Salvar", "document-save", Action::SAVE);
+    headerPalette = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 4);
+    style(headerPalette, "studio-colors");
+    name(headerPalette, "Cores da caneta e do marca-texto");
+    // A bounded viewport keeps the header's minimum width small. GtkBox's center
+    // widget centers the palette independently of the filename and right actions.
+    auto* colorScroll = gtk_scrolled_window_new(nullptr, nullptr);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(colorScroll), GTK_POLICY_EXTERNAL, GTK_POLICY_NEVER);
+    gtk_scrolled_window_set_propagate_natural_width(GTK_SCROLLED_WINDOW(colorScroll), true);
+    gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(colorScroll), 1);
+    gtk_scrolled_window_set_max_content_width(GTK_SCROLLED_WINDOW(colorScroll), 480);
+    headerSwatches = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3);
+    gtk_container_add(GTK_CONTAINER(colorScroll), headerSwatches);
+    gtk_box_pack_start(GTK_BOX(headerPalette), colorScroll, true, true, 0);
+    auto* moreColors = gtk_button_new();
+    name(moreColors, "Mais cores");
+    auto* colorBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3);
+    headerColorImage = ColorIcon::newGtkImage(window->getControl()->getToolHandler()->getActiveTool()->getColor(), 20);
+    gtk_box_pack_start(GTK_BOX(colorBox), headerColorImage, false, false, 0);
+    gtk_box_pack_start(GTK_BOX(colorBox), gtk_image_new_from_icon_name("pan-down-symbolic", GTK_ICON_SIZE_MENU), false, false, 0);
+    gtk_container_add(GTK_CONTAINER(moreColors), colorBox);
+    gtk_box_pack_start(GTK_BOX(headerPalette), moreColors, false, false, 0);
+    g_signal_connect(moreColors, "clicked", G_CALLBACK((+[](GtkButton* button, gpointer data) {
+        static_cast<StudioInterface*>(data)->radial->showToolOptions(GTK_WIDGET(button), RadialMenu::Option::COLOR);
+    })), this);
+    gtk_box_set_center_widget(GTK_BOX(header), headerPalette);
+    reloadPalette();
+    auto* headerActions = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 6);
+    gtk_box_pack_end(GTK_BOX(header), headerActions, false, false, 0);
+    actionButton(headerActions, "Desfazer", "edit-undo", Action::UNDO);
+    actionButton(headerActions, "Refazer", "edit-redo", Action::REDO);
+    auto* saveButton = actionButton(headerActions, "Salvar", "document-save", Action::SAVE);
     saveLabel = gtk_label_new("Salvar");
     gtk_box_pack_start(GTK_BOX(gtk_bin_get_child(GTK_BIN(saveButton))), saveLabel, false, false, 0);
-    auto* exportButton = actionButton(header, "Exportar PDF", "document-export-pdf", Action::EXPORT_AS_PDF);
+    auto* exportButton = actionButton(headerActions, "Exportar PDF", "document-export-pdf", Action::EXPORT_AS_PDF);
     style(exportButton, "studio-primary");
     exportLabel = gtk_label_new("Exportar");
     gtk_box_pack_start(GTK_BOX(gtk_bin_get_child(GTK_BIN(exportButton))), exportLabel, false, false, 0);
@@ -124,7 +160,7 @@ StudioInterface::StudioInterface(MainWindow* window, GtkOverlay* overlay, Radial
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(modePicker), "focus", "Foco");
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(modePicker), "classic", "Clássico");
     name(modePicker, "Modo da interface");
-    gtk_box_pack_end(GTK_BOX(header), modePicker, false, false, 4);
+    gtk_box_pack_end(GTK_BOX(headerActions), modePicker, false, false, 4);
     gtk_box_pack_start(GTK_BOX(window->get("mainBox")), header, false, false, 0);
     gtk_box_reorder_child(GTK_BOX(window->get("mainBox")), header, 0);
     gtk_widget_show_all(header);
@@ -348,12 +384,38 @@ void StudioInterface::scheduleRefresh() {
         auto* self = static_cast<StudioInterface*>(data); self->refreshIdle = 0; self->refresh(); return G_SOURCE_REMOVE;
     }, this);
 }
+void StudioInterface::reloadPalette() {
+    for (auto* button : headerColorButtons) gtk_widget_destroy(button);
+    headerColorButtons.clear();
+    const auto& palette = window->getControl()->getPalette();
+    for (size_t i = 0; i < std::min(size_t(12), palette.size()); ++i) {
+        const auto& color = palette.getColorAt(i);
+        auto* button = gtk_toggle_button_new();
+        style(button, "studio-swatch");
+        name(button, color.getName().c_str());
+        gtk_container_add(GTK_CONTAINER(button), ColorIcon::newGtkImage(color.getColor(), 20));
+        bind(button, Action::TOOL_COLOR, g_variant_new_uint32(uint32_t(color.getColor())));
+        xoj::util::gtk::setToggleButtonUnreleasable(GTK_TOGGLE_BUTTON(button));
+        gtk_box_pack_start(GTK_BOX(headerSwatches), button, false, false, 0);
+        gtk_widget_show_all(button);
+        gtk_widget_set_no_show_all(button, true);
+        headerColorButtons.push_back(button);
+    }
+    resizeHeaderPalette(gtk_widget_get_allocated_width(header));
+}
+void StudioInterface::resizeHeaderPalette(int width) {
+    const size_t count = width >= 1350 ? 12 : width >= 1050 ? 8 : width >= 800 ? 5 : width >= 650 ? 3 : 0;
+    for (size_t i = 0; i < headerColorButtons.size(); ++i)
+        gtk_widget_set_visible(headerColorButtons[i], i < count);
+}
 void StudioInterface::refresh() {
     auto* tool = window->getControl()->getToolHandler()->getActiveTool();
     // RadialMenu owns its navigation and refreshes its options on tool changes.
     // Synchronizing the Studio dock must not dismiss a selection made in that menu.
     active = tool->getToolType();
     auto* db = window->getControl()->getActionDatabase();
+    gtk_widget_set_sensitive(headerPalette, (active == TOOL_PEN || active == TOOL_HIGHLIGHTER) &&
+                                           db->isActionEnabled(Action::TOOL_COLOR));
     for (const auto& entry : context) {
         gtk_widget_set_visible(entry.widget, entry.action == Action::SELECT_FONT ? active == TOOL_TEXT : tool->hasCapability(entry.capability));
         gtk_widget_set_sensitive(entry.widget, db->isActionEnabled(entry.action));
@@ -366,6 +428,7 @@ void StudioInterface::refresh() {
     else gtk_style_context_remove_class(selectionStyle, "studio-group-active");
     auto pixbuf = ColorIcon::newGdkPixbuf(tool->getColor(), 20);
     gtk_image_set_from_pixbuf(GTK_IMAGE(colorImage), pixbuf.get());
+    gtk_image_set_from_pixbuf(GTK_IMAGE(headerColorImage), pixbuf.get());
     const char* names[] = {"Muito fina", "Fina", "Média", "Grossa", "Muito grossa"};
     gtk_label_set_text(GTK_LABEL(sizeLabel), names[std::clamp(int(tool->getSize()), 0, 4)]);
     const char* modes[] = {"", "Livre", "Linha", "Retângulo", "Elipse", "Seta", "Seta dupla", "Eixos", "Reconhecer", "Spline"};
@@ -390,6 +453,7 @@ void StudioInterface::updatePageNumbers(size_t page, size_t count) {
     gtk_label_set_text(GTK_LABEL(pageLabel), text.c_str());
 }
 void StudioInterface::resize(int width) {
+    resizeHeaderPalette(width);
     // Eight 44px targets fit comfortably until the canvas is narrower than 440px.
     // Keep the palette below the page content for normal tablet/laptop windows.
     bool nextCompact = width < 440;

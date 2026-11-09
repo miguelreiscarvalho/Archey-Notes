@@ -11,6 +11,7 @@ Este é um projeto independente, derivado do [Xournal++](https://github.com/xour
 - Ambiente de estudos com matérias, capítulos e organização de anotações.
 - Editor Xournal++ integrado à janela Electron, com múltiplos documentos em abas nativas.
 - Modos Clássico, Estúdio e Foco.
+- Paleta nativa de caneta e marca-texto no centro da barra superior dos modos Estúdio e Foco.
 - Menu radial flutuante, reposicionável e animado, conectado às ferramentas e configurações nativas.
 - Barra lateral com expansão suave, indicador animado e temas claro/escuro.
 - Anotações em PDF, caneta, borracha, marca-texto e reconhecimento nativo de formas.

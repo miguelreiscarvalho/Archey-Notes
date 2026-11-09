@@ -17,6 +17,7 @@ public:
     bool isModern() const { return mode != "classic"; }
     void applyLayout();
     void updatePageNumbers(size_t page, size_t count);
+    void reloadPalette();
 private:
     struct Context { GtkWidget* widget; ToolCapabilities capability; Action action; };
     MainWindow* window;
@@ -26,6 +27,8 @@ private:
     GtkWidget *colorButton, *colorImage, *sizeButton, *sizeLabel, *drawingButton, *drawingLabel;
     GtkWidget *selectionButton, *eraserButton, *pageLabel, *zoomLabel, *exportLabel, *saveLabel;
     GtkWidget* selectionTool;
+    GtkWidget *headerPalette, *headerSwatches, *headerColorImage;
+    std::vector<GtkWidget*> headerColorButtons;
     std::vector<Context> context;
     std::vector<GObject*> watched;
     std::string mode = "studio", configPath;
@@ -47,4 +50,5 @@ private:
     void save();
     void resize(int width);
     void updateTitle();
+    void resizeHeaderPalette(int width);
 };
