@@ -54,3 +54,5 @@ Contribuições com correções, acessibilidade, testes com caneta e melhorias d
 Esta versão acrescenta uma paleta no cabeçalho, o gesto **Riscar para apagar** nas opções da caneta e uma mola discreta de aproximadamente 200 ms ao abrir o menu radial. O gesto exige várias passadas rápidas sobre traços da camada atual e apaga traços inteiros com desfazer; texto já convertido não é removido. Pode ser desativado nas opções da caneta. Esses recursos foram compilados, mas não passaram por testes funcionais a pedido do usuário; integram este download experimental.
 
 A mola está presente tanto na abertura das ferramentas quanto na camada de opções, com intensidade ligeiramente maior e opacidade suave. A geometria das opções limita o raio para manter os botões dentro do menu.
+
+Com o menu radial completamente fechado, o símbolo da ferramenta ativa fica branco sobre o círculo azul. Ao abrir o menu, os ícones das ferramentas conservam a apresentação nativa.

@@ -39,3 +39,5 @@
 - A compilação final concluiu. Não foram executados testes funcionais, testes automatizados nem automação de interface nesta preparação, conforme pedido do usuário.
 - Limiares do gesto e animação final não foram validados em uso real. A versão é uma prévia experimental.
 - Antes do envio, somente conteúdo e integridade do pacote serão conferidos para impedir a publicação de documentos, perfil ou histórico pessoal.
+
+O ícone central do radial fechado foi recolorido em código para branco, preservando a transparência e a silhueta da ferramenta ativa. A superfície respeita a escala de DPI. A mudança também foi somente compilada, sem testes funcionais ou captura de interface.
