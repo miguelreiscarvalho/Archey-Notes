@@ -30,3 +30,12 @@
 - Fundo, superfícies e bordas do tema escuro mais escuros.
 - Ensaio de movimento, foco/ponteiro, expansão e centralização passou. Capturas dos dois temas conferidas com biblioteca vazia.
 - Nenhuma lógica nativa, catálogo ou documento de usuário foi alterado.
+
+## Atualização 0.1.3-preview — sem testes funcionais
+
+- Paleta nativa central no cabeçalho para caneta/marca-texto, com acesso às demais cores.
+- Riscar para apagar: gesto de várias passadas rápidas sobre tinta de caneta na camada atual, com uma operação nativa de desfazer. Remove traços inteiros; texto convertido não é removido. Opção desativável em Opções da caneta.
+- Mola um pouco mais intensa, de aproximadamente 200 ms na abertura principal; curva também aplicada às opções das ferramentas.
+- A compilação final concluiu. Não foram executados testes funcionais, testes automatizados nem automação de interface nesta preparação, conforme pedido do usuário.
+- Limiares do gesto e animação final não foram validados em uso real. A versão é uma prévia experimental.
+- Antes do envio, somente conteúdo e integridade do pacote serão conferidos para impedir a publicação de documentos, perfil ou histórico pessoal.

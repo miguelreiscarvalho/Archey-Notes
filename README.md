@@ -30,7 +30,7 @@ Esta prévia é para Windows 10/11 x64. O pacote inclui os runtimes do editor, E
 
 ## Estado do projeto
 
-Prévia experimental `0.1.2-preview`, baseada no Xournal++ 1.3.8. Reconhecimento de texto, entrada por caneta/toque e integração das janelas Windows ainda precisam de testes em mais equipamentos. O código do editor permanece C++/GTK; o Electron organiza o ambiente externo. A referência visual de animação foi adaptada à tecnologia do projeto.
+Prévia experimental `0.1.3-preview`, baseada no Xournal++ 1.3.8. Reconhecimento de texto, entrada por caneta/toque e integração das janelas Windows ainda precisam de testes em mais equipamentos. O código do editor permanece C++/GTK; o Electron organiza o ambiente externo. A referência visual de animação foi adaptada à tecnologia do projeto.
 
 ## Código, licença e contribuição
 
@@ -49,6 +49,8 @@ Contribuições com correções, acessibilidade, testes com caneta e melhorias d
 
 **English:** Archey Notes is an independent open-source project improving the Xournal++ handwriting and study experience through an Electron study workspace, animated navigation, a native floating radial menu and experimental Windows Ink handwriting-to-text. It preserves the native C++/GTK editor. Windows previews ship with an empty library and no developer documents. GPL-2.0-or-later; third-party licenses are preserved.
 
-## Em desenvolvimento
+## Novidades da 0.1.3-preview
 
-A branch de desenvolvimento acrescenta uma paleta no cabeçalho, o gesto **Riscar para apagar** nas opções da caneta e uma mola discreta de aproximadamente 200 ms ao abrir o menu radial. O gesto exige várias passadas rápidas sobre traços da camada atual e apaga traços inteiros com desfazer; texto já convertido não é removido. Pode ser desativado nas opções da caneta. Esses recursos foram compilados, mas não passaram por testes funcionais a pedido do usuário; ainda não integram o download 0.1.2-preview.
+Esta versão acrescenta uma paleta no cabeçalho, o gesto **Riscar para apagar** nas opções da caneta e uma mola discreta de aproximadamente 200 ms ao abrir o menu radial. O gesto exige várias passadas rápidas sobre traços da camada atual e apaga traços inteiros com desfazer; texto já convertido não é removido. Pode ser desativado nas opções da caneta. Esses recursos foram compilados, mas não passaram por testes funcionais a pedido do usuário; integram este download experimental.
+
+A mola está presente tanto na abertura das ferramentas quanto na camada de opções, com intensidade ligeiramente maior e opacidade suave. A geometria das opções limita o raio para manter os botões dentro do menu.
