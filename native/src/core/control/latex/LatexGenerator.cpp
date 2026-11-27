@@ -50,14 +50,20 @@ auto LatexGenerator::asyncRun(const fs::path& texDir, const std::string& texFile
     GErrorGuard err{};
     std::string texFilePathOSEncoding = Util::GFilename(Util::getLongPath(texDir) / "tex.tex").c_str();
 
-    for (auto i = cmd.find("{}"); i != std::string::npos; i = cmd.find("{}", i + texFilePathOSEncoding.length())) {
-        cmd.replace(i, 2, texFilePathOSEncoding);
-    }
-    // Todo (rolandlo): is this a todo?
-    // Windows note: g_shell_parse_argv assumes POSIX paths, so Windows paths need to be escaped.
+    // Parse the configured command first. Inserting a native Windows path before
+    // parsing consumes its backslashes and splits paths containing spaces.
     GStrvGuard argv{};
     if (!g_shell_parse_argv(cmd.c_str(), nullptr, out_ptr(argv), out_ptr(err))) {
         return GenError{FS(_F("Failed to parse LaTeX generator command: {1}") % err->message)};
+    }
+    for (char** argument = argv.get(); *argument; ++argument) {
+        std::string value = *argument;
+        for (auto i = value.find("{}"); i != std::string::npos;
+             i = value.find("{}", i + texFilePathOSEncoding.length())) {
+            value.replace(i, 2, texFilePathOSEncoding);
+        }
+        g_free(*argument);
+        *argument = g_strdup(value.c_str());
     }
     gchar* prog = argv.get()[0];
     if (!prog || !(prog = g_find_program_in_path(prog))) {
